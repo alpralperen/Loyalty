@@ -1,0 +1,49 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  CUSTOMER
+  CASHIER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  role          Role      @default(CUSTOMER)
+  name          String
+  phone         String    @unique
+  passwordHash  String
+  loyaltyPoints Int       @default(0) // Only relevant for CUSTOMER
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  customerTransactions Transaction[] @relation("CustomerTransactions")
+  cashierTransactions  Transaction[] @relation("CashierTransactions")
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    User     @relation("CustomerTransactions", fields: [customerId], references: [id])
+  cashierId   String
+  cashier     User     @relation("CashierTransactions", fields: [cashierId], references: [id])
+  pointsAdded Int
+  createdAt   DateTime @default(now())
+}
+
+model Campaign {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
