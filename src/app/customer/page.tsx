@@ -1,4 +1,4 @@
-import { Bell, Scan, History, ChevronRight, Clock } from "lucide-react"
+import { Bell, Scan, History, ChevronRight, Clock, Gift } from "lucide-react"
 import { QRCodeSVG } from "qrcode.react"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"

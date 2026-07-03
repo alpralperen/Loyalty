@@ -82,7 +82,7 @@ export default async function AdminDashboard() {
         </div>
 
         <div className="space-y-3">
-          {campaigns.length > 0 ? campaigns.map((campaign, i) => (
+          {campaigns.length > 0 ? campaigns.map((campaign: any, i: number) => (
             <div key={campaign.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex gap-4 items-center">
               <div className={`p-3 rounded-xl flex-shrink-0 ${
                 i === 0 ? "bg-[#f3efff] text-[#5c3c92]" : 
