@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Bell, Camera, Gift, X, Coffee, Star } from "lucide-react"
-import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode"
+import { Html5Qrcode } from "html5-qrcode"
 import { QRCodeSVG } from "qrcode.react"
 
 export default function CustomerDashboardClient({ user }: { user: { name: string, points: number } }) {
@@ -16,43 +16,54 @@ export default function CustomerDashboardClient({ user }: { user: { name: string
   const canRedeem = user.points >= pointsNeeded
 
   useEffect(() => {
-    if (isScanModalOpen) {
-      const scanner = new Html5QrcodeScanner(
-        "reader",
-        { 
-          fps: 10, 
-          qrbox: { width: 250, height: 250 },
-          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-        },
-        false
-      )
+    let html5QrCode: Html5Qrcode;
+    let isRequesting = false;
 
-      scanner.render(async (decodedText) => {
-        scanner.clear()
-        // Send decodedText (tokenId) to scan-earn API
-        try {
-          const res = await fetch("/api/qr/scan-earn", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tokenId: decodedText })
-          })
-          const data = await res.json()
-          setScanResult({ success: res.ok, message: data.message })
-          if (res.ok) {
-            setTimeout(() => window.location.reload(), 2000)
+    if (isScanModalOpen && !scanResult) {
+      html5QrCode = new Html5Qrcode("reader");
+      
+      html5QrCode.start(
+        { facingMode: "environment" }, // Arka kamerayı zorla
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        async (decodedText) => {
+          if (isRequesting) return;
+          isRequesting = true;
+          
+          try {
+            await html5QrCode.stop(); // Okuma başarılı olunca kamerayı durdur
+            
+            const res = await fetch("/api/qr/scan-earn", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ tokenId: decodedText })
+            });
+            const data = await res.json();
+            
+            setScanResult({ success: res.ok, message: data.message });
+            
+            if (res.ok) {
+              setTimeout(() => window.location.reload(), 2000);
+            }
+          } catch (error) {
+            setScanResult({ success: false, message: "Tarama hatası" });
+          } finally {
+            isRequesting = false;
           }
-        } catch (error) {
-          setScanResult({ success: false, message: "Tarama hatası" })
+        },
+        (errorMessage) => {
+          // Her frame'de okuyamadığında hata verir, bunu yoksay
         }
-      }, (error) => {
-        // Ignore scan errors as they happen every frame
-      })
-
-      return () => {
-        scanner.clear().catch(e => console.error("Scanner clear error", e))
-      }
+      ).catch((err) => {
+        console.error("Kamera başlatılamadı:", err);
+      });
     }
-  }, [isScanModalOpen])
+
+    return () => {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => html5QrCode.clear()).catch(console.error);
+      }
+    };
+  }, [isScanModalOpen, scanResult])
 
   const generateReward = async () => {
     try {

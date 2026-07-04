@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { QrCode, ScanLine, X, CheckCircle2, Coffee, Star } from "lucide-react"
-import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode"
+import { Html5Qrcode } from "html5-qrcode"
 import { QRCodeSVG } from "qrcode.react"
 
 export default function CashierDashboardClient({ cashierName }: { cashierName: string }) {
@@ -13,45 +13,57 @@ export default function CashierDashboardClient({ cashierName }: { cashierName: s
 
   // Scan Reward Logic
   useEffect(() => {
-    if (activeTab === "SCAN") {
-      const scanner = new Html5QrcodeScanner(
-        "reward-reader",
-        { 
-          fps: 10, 
-          qrbox: { width: 250, height: 250 },
-          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
-        },
-        false
-      )
+    let html5QrCode: Html5Qrcode;
+    let isRequesting = false;
 
-      scanner.render(async (decodedText) => {
-        scanner.clear()
-        try {
-          const res = await fetch("/api/qr/scan-redeem", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tokenId: decodedText })
-          })
-          const data = await res.json()
-          setScanResult({ success: res.ok, message: data.message })
-          if (res.ok) {
-            setTimeout(() => {
-              setScanResult(null)
-              setActiveTab("GENERATE")
-            }, 3000)
+    if (activeTab === "SCAN" && !scanResult) {
+      html5QrCode = new Html5Qrcode("reward-reader");
+      
+      html5QrCode.start(
+        { facingMode: "environment" },
+        { fps: 10, qrbox: { width: 250, height: 250 } },
+        async (decodedText) => {
+          if (isRequesting) return;
+          isRequesting = true;
+          
+          try {
+            await html5QrCode.stop();
+            
+            const res = await fetch("/api/qr/scan-redeem", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ tokenId: decodedText })
+            });
+            const data = await res.json();
+            
+            setScanResult({ success: res.ok, message: data.message });
+            
+            if (res.ok) {
+              setTimeout(() => {
+                setScanResult(null);
+                setActiveTab("GENERATE");
+              }, 3000);
+            }
+          } catch (error) {
+            setScanResult({ success: false, message: "Tarama hatası" });
+          } finally {
+            isRequesting = false;
           }
-        } catch (error) {
-          setScanResult({ success: false, message: "Tarama hatası" })
+        },
+        (errorMessage) => {
+          // Ignore scan errors
         }
-      }, (error) => {
-        // Ignore scan errors
-      })
-
-      return () => {
-        scanner.clear().catch(e => console.error("Scanner clear error", e))
-      }
+      ).catch((err) => {
+        console.error("Kamera başlatılamadı:", err);
+      });
     }
-  }, [activeTab])
+
+    return () => {
+      if (html5QrCode && html5QrCode.isScanning) {
+        html5QrCode.stop().then(() => html5QrCode.clear()).catch(console.error);
+      }
+    };
+  }, [activeTab, scanResult])
 
   // Generate Points Logic
   const handleGenerate = async () => {
