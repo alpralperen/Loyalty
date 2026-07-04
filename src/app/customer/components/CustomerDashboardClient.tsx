@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { Bell, Camera, Gift, X, Coffee, Star } from "lucide-react"
-import { Html5QrcodeScanner } from "html5-qrcode"
+import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode"
 import { QRCodeSVG } from "qrcode.react"
 
 export default function CustomerDashboardClient({ user }: { user: { name: string, points: number } }) {
@@ -19,7 +19,11 @@ export default function CustomerDashboardClient({ user }: { user: { name: string
     if (isScanModalOpen) {
       const scanner = new Html5QrcodeScanner(
         "reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 },
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        },
         false
       )
 

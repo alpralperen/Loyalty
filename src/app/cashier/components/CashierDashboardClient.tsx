@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { QrCode, ScanLine, X, CheckCircle2, Coffee, Star } from "lucide-react"
-import { Html5QrcodeScanner } from "html5-qrcode"
+import { Html5QrcodeScanner, Html5QrcodeScanType } from "html5-qrcode"
 import { QRCodeSVG } from "qrcode.react"
 
 export default function CashierDashboardClient({ cashierName }: { cashierName: string }) {
@@ -16,7 +16,11 @@ export default function CashierDashboardClient({ cashierName }: { cashierName: s
     if (activeTab === "SCAN") {
       const scanner = new Html5QrcodeScanner(
         "reward-reader",
-        { fps: 10, qrbox: { width: 250, height: 250 } },
+        { 
+          fps: 10, 
+          qrbox: { width: 250, height: 250 },
+          supportedScanTypes: [Html5QrcodeScanType.SCAN_TYPE_CAMERA]
+        },
         false
       )
 
