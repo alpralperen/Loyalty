@@ -26,7 +26,7 @@ export default function LoginPage() {
       setError(res.error)
       setLoading(false)
     } else {
-      router.push("/dashboard") // We'll redirect to appropriate dashboard later via middleware or client
+      router.push("/") // We'll redirect to appropriate dashboard later via middleware or client
       router.refresh()
     }
   }

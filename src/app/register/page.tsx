@@ -8,6 +8,7 @@ export default function RegisterPage() {
   const [name, setName] = useState("")
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
+  const [role, setRole] = useState("CUSTOMER")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
 
@@ -20,7 +21,7 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, password }),
+        body: JSON.stringify({ name, phone, password, role }),
       })
 
       const data = await res.json()
@@ -52,6 +53,20 @@ export default function RegisterPage() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Hesap Tipi
+            </label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors bg-white"
+            >
+              <option value="CUSTOMER">Müşteri</option>
+              <option value="CASHIER">Kasiyer</option>
+              <option value="ADMIN">Yönetici</option>
+            </select>
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               İsim Soyisim
