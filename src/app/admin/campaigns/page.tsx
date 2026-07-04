@@ -1,8 +1,21 @@
-export default function AdminCampaigns() {
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+import prisma from "@/lib/prisma"
+import { redirect } from "next/navigation"
+import AdminCampaignsClient from "../components/AdminCampaignsClient"
+
+export default async function AdminCampaignsPage() {
+  const session = await getServerSession(authOptions)
+  
+  if (!session || session.user.role !== "ADMIN") {
+    redirect("/login")
+  }
+
+  const campaigns = await prisma.campaign.findMany({
+    orderBy: { createdAt: "desc" }
+  })
+
   return (
-    <div className="p-6 flex flex-col items-center justify-center h-full min-h-[60vh] text-center">
-      <h1 className="text-2xl font-bold text-[#5c3c92] mb-2">Kampanyalar</h1>
-      <p className="text-gray-500">Bu sayfa yapım aşamasındadır. Yakında yeni kampanya oluşturma ve yönetme işlemlerini buradan yapabileceksiniz.</p>
-    </div>
+    <AdminCampaignsClient initialCampaigns={campaigns} />
   )
 }
