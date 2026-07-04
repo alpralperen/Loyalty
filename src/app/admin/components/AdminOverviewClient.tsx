@@ -5,13 +5,15 @@ import { Users, CreditCard, Gift, TrendingUp, ArrowUpRight } from "lucide-react"
 
 export default function AdminOverviewClient({ 
   stats, 
-  chartData 
+  chartData,
+  recentLogs
 }: { 
   stats: { totalUsers: number, totalPoints: number, activeCampaigns: number, totalTransactions: number },
-  chartData: any[] 
+  chartData: any[],
+  recentLogs?: any[]
 }) {
   return (
-    <div className="p-6 relative font-sans">
+    <div className="p-6 relative font-sans pb-24">
       <header className="mb-8 pt-4">
         <p className="text-sm font-medium text-purple-600">Yönetici Paneli</p>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Genel Bakış</h1>
@@ -79,6 +81,37 @@ export default function AdminOverviewClient({
           </ResponsiveContainer>
         </div>
       </div>
+
+      {/* Recent Logs Section */}
+      {recentLogs && (
+        <div className="bg-white p-5 rounded-3xl shadow-sm border border-gray-100">
+          <h2 className="font-bold text-gray-800 mb-4">Son İşlemler</h2>
+          <div className="space-y-3">
+            {recentLogs.length > 0 ? recentLogs.map((log: any) => (
+              <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-2xl">
+                <div>
+                  <p className="text-sm font-bold text-gray-900">
+                    {log.type === "EARN" ? "Puan Kazandı" : "Ödül Kullanıldı"}
+                  </p>
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Müşteri: {log.customer.name} | Kasiyer: {log.cashier.name}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className={`text-sm font-black ${log.type === "EARN" ? "text-green-600" : "text-amber-600"}`}>
+                    {log.type === "EARN" ? "+" : "-"}{log.points} Puan
+                  </span>
+                  <p className="text-[9px] text-gray-400 mt-1">
+                    {new Date(log.createdAt).toLocaleDateString("tr-TR")} {new Date(log.createdAt).toLocaleTimeString("tr-TR", {hour: '2-digit', minute:'2-digit'})}
+                  </p>
+                </div>
+              </div>
+            )) : (
+              <p className="text-sm text-gray-500 text-center py-4">Henüz işlem bulunmuyor.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

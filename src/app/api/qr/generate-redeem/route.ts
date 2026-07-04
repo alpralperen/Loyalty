@@ -16,22 +16,28 @@ export async function POST(req: Request) {
     }
 
     // Check if customer has enough points
-    const customer = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.user.id }
     })
 
-    if (!customer || customer.loyaltyPoints < points) {
-      return NextResponse.json({ message: "Yetersiz puan" }, { status: 400 })
+    if (!user) {
+      return NextResponse.json({ message: "Kullanıcı bulunamadı" }, { status: 404 })
     }
 
-    // Create a new QR Token valid for 5 minutes
-    const expiresAt = new Date(Date.now() + 5 * 60 * 1000)
+    const setting = await prisma.setting.findUnique({ where: { id: "default" } })
+    const pointsRequired = setting?.pointsRequired || 100
+
+    if (user.loyaltyPoints < pointsRequired) {
+      return NextResponse.json({ message: "Yeterli puanınız yok" }, { status: 400 })
+    }
+
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000) // 5 minutes
 
     const token = await prisma.qrToken.create({
       data: {
         type: "REDEEM",
-        points,
-        creatorId: session.user.id,
+        points: pointsRequired,
+        creatorId: user.id,
         expiresAt
       }
     })

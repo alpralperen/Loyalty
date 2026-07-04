@@ -24,6 +24,15 @@ export default async function AdminDashboard() {
     where: { isActive: true }
   })
 
+  const recentLogs = await prisma.transaction.findMany({
+    take: 5,
+    orderBy: { createdAt: "desc" },
+    include: {
+      customer: { select: { name: true } },
+      cashier: { select: { name: true } }
+    }
+  })
+
   // Group transactions by day for the chart (Mocking last 7 days for the chart, in real app group by date from DB)
   // Generating mock chart data since SQLite grouping by day can be complex in Prisma without raw queries
   const today = new Date()
@@ -44,6 +53,6 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <AdminOverviewClient stats={stats} chartData={chartData} />
+    <AdminOverviewClient stats={stats} chartData={chartData} recentLogs={recentLogs} />
   )
 }

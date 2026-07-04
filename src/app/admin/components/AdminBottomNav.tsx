@@ -10,7 +10,7 @@ export default function AdminBottomNav() {
   const tabs = [
     { name: "Özet", path: "/admin", icon: BarChart3 },
     { name: "Kampanyalar", path: "/admin/campaigns", icon: Megaphone },
-    { name: "Müşteriler", path: "/admin/customers", icon: Users },
+    { name: "Çalışanlar", path: "/admin/staff", icon: Users },
     { name: "Ayarlar", path: "/admin/settings", icon: Settings }
   ]
 

@@ -1,6 +1,8 @@
 import { NextResponse, NextRequest } from "next/server"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,6 +20,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: "Bu telefon numarası zaten kayıtlı" }, { status: 400 })
     }
 
+    // Security Check: Only ADMIN can create CASHIER or ADMIN accounts
+    let finalRole = "CUSTOMER"
+    if (role && ["CASHIER", "ADMIN"].includes(role)) {
+      const session = await getServerSession(authOptions)
+      if (session?.user?.role === "ADMIN") {
+        finalRole = role
+      }
+    }
+
     const passwordHash = await bcrypt.hash(password, 10)
 
     const user = await prisma.user.create({
@@ -25,8 +36,7 @@ export async function POST(req: NextRequest) {
         name,
         phone,
         passwordHash,
-        // Allow creating other roles if specified (for testing purposes, in production this should be secured)
-        role: role && ["CUSTOMER", "CASHIER", "ADMIN"].includes(role) ? role : "CUSTOMER",
+        role: finalRole as any,
       }
     })
 

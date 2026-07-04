@@ -5,15 +5,14 @@ import { Bell, Camera, Gift, X, Coffee, Star } from "lucide-react"
 import { Html5Qrcode } from "html5-qrcode"
 import { QRCodeSVG } from "qrcode.react"
 
-export default function CustomerDashboardClient({ user }: { user: { name: string, points: number } }) {
+export default function CustomerDashboardClient({ user, pointsRequired }: { user: { name: string, points: number }, pointsRequired: number }) {
   const [isScanModalOpen, setIsScanModalOpen] = useState(false)
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false)
   const [rewardQr, setRewardQr] = useState<string | null>(null)
   const [scanResult, setScanResult] = useState<{ success: boolean, message: string } | null>(null)
   
-  const pointsNeeded = 100
-  const progress = Math.min((user.points / pointsNeeded) * 100, 100)
-  const canRedeem = user.points >= pointsNeeded
+  const progress = Math.min((user.points / pointsRequired) * 100, 100)
+  const canRedeem = user.points >= pointsRequired
 
   useEffect(() => {
     let html5QrCode: Html5Qrcode;
@@ -70,7 +69,7 @@ export default function CustomerDashboardClient({ user }: { user: { name: string
       const res = await fetch("/api/qr/generate-redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ points: pointsNeeded })
+        body: JSON.stringify({ points: pointsRequired })
       })
       const data = await res.json()
       if (res.ok) {
@@ -107,7 +106,7 @@ export default function CustomerDashboardClient({ user }: { user: { name: string
             <p className="text-white/70 text-sm font-medium mb-1">Mevcut Puan</p>
             <div className="flex items-end gap-2">
               <span className="text-5xl font-black text-white tracking-tighter">{user.points}</span>
-              <span className="text-gold-400 font-bold mb-1">/ {pointsNeeded}</span>
+              <span className="text-gold-400 font-bold mb-1">/ {pointsRequired}</span>
             </div>
           </div>
           <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl">
@@ -168,7 +167,7 @@ export default function CustomerDashboardClient({ user }: { user: { name: string
           <div className="text-center">
             <span className={`block font-bold text-sm ${canRedeem ? 'text-coffee-900' : 'text-gray-500'}`}>Ödülü Kullan</span>
             <span className={`text-[10px] font-medium ${canRedeem ? 'text-coffee-800' : 'text-gray-400'}`}>
-              {canRedeem ? 'Bedava Kahve' : `${pointsNeeded - user.points} Puan Kaldı`}
+              {canRedeem ? 'Bedava Kahve' : `${pointsRequired - user.points} Puan Kaldı`}
             </span>
           </div>
         </button>

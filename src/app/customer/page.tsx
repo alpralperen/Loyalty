@@ -20,7 +20,11 @@ export default async function CustomerPage() {
     redirect("/login")
   }
 
+  // Fetch settings
+  let setting = await prisma.setting.findUnique({ where: { id: "default" } })
+  const pointsRequired = setting?.pointsRequired || 100
+
   return (
-    <CustomerDashboardClient user={{ name: user.name, points: user.loyaltyPoints }} />
+    <CustomerDashboardClient user={{ name: user.name, points: user.loyaltyPoints }} pointsRequired={pointsRequired} />
   )
 }

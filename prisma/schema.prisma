@@ -77,3 +77,11 @@ model Campaign {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model Setting {
+  id          String   @id @default("default") // Only one record needed
+  pointsRequired Int   @default(100)
+  storeName   String   @default("Premium Coffee")
+  updatedAt   DateTime @updatedAt
+}
+
