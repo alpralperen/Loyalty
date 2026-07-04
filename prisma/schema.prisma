@@ -16,6 +16,21 @@ enum Role {
   ADMIN
 }
 
+enum QrType {
+  EARN
+  REDEEM
+}
+
+enum QrStatus {
+  ACTIVE
+  USED
+}
+
+enum TransactionType {
+  EARN
+  REDEEM
+}
+
 model User {
   id            String    @id @default(cuid())
   role          Role      @default(CUSTOMER)
@@ -28,16 +43,30 @@ model User {
 
   customerTransactions Transaction[] @relation("CustomerTransactions")
   cashierTransactions  Transaction[] @relation("CashierTransactions")
+  createdTokens        QrToken[]     @relation("CreatorTokens")
+}
+
+model QrToken {
+  id        String   @id @default(cuid())
+  type      QrType
+  points    Int
+  status    QrStatus @default(ACTIVE)
+  creatorId String
+  creator   User     @relation("CreatorTokens", fields: [creatorId], references: [id])
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Transaction {
-  id          String   @id @default(cuid())
+  id          String          @id @default(cuid())
+  type        TransactionType @default(EARN)
   customerId  String
-  customer    User     @relation("CustomerTransactions", fields: [customerId], references: [id])
+  customer    User            @relation("CustomerTransactions", fields: [customerId], references: [id])
   cashierId   String
-  cashier     User     @relation("CashierTransactions", fields: [cashierId], references: [id])
-  pointsAdded Int
-  createdAt   DateTime @default(now())
+  cashier     User            @relation("CashierTransactions", fields: [cashierId], references: [id])
+  points      Int
+  createdAt   DateTime        @default(now())
 }
 
 model Campaign {

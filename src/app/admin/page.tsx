@@ -6,9 +6,9 @@ export default async function AdminDashboard() {
   const totalUsers = await prisma.user.count({ where: { role: "CUSTOMER" } })
   const totalTransactions = await prisma.transaction.count()
   const totalPointsAgg = await prisma.transaction.aggregate({
-    _sum: { pointsAdded: true }
+    _sum: { points: true }
   })
-  const totalPoints = totalPointsAgg._sum.pointsAdded || 0
+  const totalPoints = totalPointsAgg._sum.points || 0
 
   const campaigns = await prisma.campaign.findMany({
     orderBy: { createdAt: "desc" }
